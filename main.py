@@ -11,12 +11,19 @@ from agents.reporting_agent import ReportingAgent
 load_dotenv()
 
 TARGET = os.getenv("TARGET_URL")
+print("TARGET =", TARGET)
 
+print("ScannerAgent")
 scanner = ScannerAgent()
+print("PayloadAgent")
 payload_agent = PayloadAgent()
+print("ValidationAgent")
 validation_agent = ValidationAgent()
+print("IntelligenceAgent")
 intel_agent = IntelligenceAgent()
+print("RemediationAgent")
 remediation_agent = RemediationAgent()
+print("ReportingAgent")
 report_agent = ReportingAgent()
 
 
