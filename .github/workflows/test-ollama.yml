@@ -1,0 +1,38 @@
+name: Test Ollama AI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-ollama:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      # Install Ollama
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+
+      # Start Ollama service
+      - name: Start Ollama
+        run: |
+          ollama serve > ollama.log 2>&1 &
+          sleep 10
+
+      # Pull free model
+      - name: Pull Llama3 Model
+        run: |
+          ollama pull llama3
+
+      # Test AI Model
+      - name: Test Ollama AI
+        run: |
+          curl http://localhost:11434/api/generate \
+          -d '{
+            "model": "llama3",
+            "prompt": "Print numbers from 1 to 10",
+            "stream": false
+          }'
