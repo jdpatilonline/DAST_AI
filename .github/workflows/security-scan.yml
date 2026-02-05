@@ -1,0 +1,42 @@
+name: Agentic Security Scan
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start ZAP
+        run: |
+          docker run -d \
+          -p 8080:8080 \
+          ghcr.io/zaproxy/zaproxy:stable \
+          zap.sh -daemon \
+          -host 0.0.0.0 \
+          -port 8080 \
+          -config api.disablekey=true
+
+          sleep 40
+
+      - name: Run Scanner
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TARGET_URL: http://testphp.vulnweb.com
+        run: python main.py
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security-report.json
