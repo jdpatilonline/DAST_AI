@@ -1,0 +1,4 @@
+python-owasp-zap-v2.4
+openai
+requests
+python-dotenv
