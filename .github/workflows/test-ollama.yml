@@ -23,16 +23,16 @@ jobs:
           sleep 10
 
       # Pull free model
-      - name: Pull Llama3 Model
+      - name: Pull mistral Model
         run: |
-          ollama pull llama3
+          ollama pull mistral
 
       # Test AI Model
       - name: Test Ollama AI
         run: |
           curl http://localhost:11434/api/generate \
           -d '{
-            "model": "llama3",
+            "model": "mistral"
             "prompt": "Print numbers from 1 to 10",
             "stream": false
           }'
