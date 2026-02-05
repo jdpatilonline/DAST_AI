@@ -20,3 +20,15 @@ agentic-security-ai/
 └── .github/
     └── workflows/
         └── security-scan.yml
+
+
+✅ Features Implemented
+• Crawling
+• Active scanning
+• AI payload generation
+• Proxy-based validation
+• Risk analysis
+• False positive review
+• Remediation generation
+• Structured reporting
+• CI/CD ready
