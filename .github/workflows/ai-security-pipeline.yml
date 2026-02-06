@@ -1,0 +1,46 @@
+name: AI Security Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - run: pip install -r requirements.txt
+
+    # ZAP
+    - name: Start ZAP
+      run: |
+        docker run -d -p 8080:8080 ghcr.io/zaproxy/zaproxy:stable \
+        zap.sh -daemon -port 8080 -host 0.0.0.0
+        sleep 20
+
+    # Ollama
+    - name: Install Ollama
+      run: curl -fsSL https://ollama.com/install.sh | sh
+
+    - name: Start Ollama
+      run: |
+        ollama serve &
+        sleep 15
+        ollama pull mistral
+
+    - name: Run Security Pipeline
+      run: python orchestrator.py
+
+    - name: Upload Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: reports/
