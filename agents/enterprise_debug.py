@@ -108,7 +108,6 @@ def run_enterprise_debug():
     print_header("ENV VARIABLE SAFETY CHECK")
 
     sensitive_vars = [
-        "OPENAI_API_KEY",
         "TARGET_URL",
         "HOST"
     ]
@@ -123,3 +122,4 @@ def run_enterprise_debug():
     print_header("DIRECTORY TREE PREVIEW")
 
     print(safe_run(["ls", "-R", "|", "head", "-n", "50"]))
+    # ==============Debug END=================
