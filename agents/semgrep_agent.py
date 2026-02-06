@@ -1,8 +1,47 @@
 import subprocess
 import os
+import json
 
 REPORT_DIR = "reports/semgrep"
+REPORT_FILE = f"{REPORT_DIR}/semgrep.json"
+
 os.makedirs(REPORT_DIR, exist_ok=True)
+
+
+def print_semgrep_report():
+
+    print("\n===== SEMGREP REPORT CONTENT =====")
+
+    if not os.path.exists(REPORT_FILE):
+        print("❌ Semgrep report not found")
+        return
+
+    try:
+        with open(REPORT_FILE, "r") as f:
+            data = json.load(f)
+
+        results = data.get("results", [])
+
+        if not results:
+            print("✅ No Semgrep findings")
+            return
+
+        print(f"⚠ Total Findings: {len(results)}\n")
+
+        for finding in results:
+            print("Rule:", finding.get("check_id"))
+            print("File:", finding.get("path"))
+            print("Severity:", finding.get("extra", {}).get("severity"))
+            print("Message:", finding.get("extra", {}).get("message"))
+            print("-" * 50)
+
+    except json.JSONDecodeError:
+        print("❌ Invalid JSON format in Semgrep report")
+
+    except Exception as e:
+        print("❌ Error reading Semgrep report:", e)
+
+    print("===== END SEMGREP REPORT =====\n")
 
 
 def run():
@@ -45,17 +84,7 @@ def run():
     except Exception as e:
         print("❌ Error running Semgrep:", e)
 
-    # Validate that Docker mount worked
-    print("\nValidating Docker mount for Semgrep...")
-    try:
-        mount_test = subprocess.run(
-            ["docker", "run", "--rm", "-v", f"{workspace}:/src", "alpine", "ls", "/src"],
-            capture_output=True,
-            text=True
-        )
-        print("Files inside container /src:")
-        print(mount_test.stdout)
-    except Exception as e:
-        print("❌ Docker mount validation failed:", e)
+    # Print Semgrep JSON Results
+    print_semgrep_report()
 
     print("===== SEMGREP SCAN COMPLETED =====\n")
