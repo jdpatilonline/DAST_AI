@@ -12,12 +12,23 @@ from agents.policy_agent import run as policy
 def main():
 
     print("Starting Security Orchestrator")
-
+    
+    print("ZAP is running")
     zap()
+    
+    print("Semgrep is running")
     semgrep()
+    
+    print("Trufflehog is running")
     trufflehog()
+    
+    print("Nmap is running")
     nmap()
+    
+    print("ai_analysis is running")
     ai_analysis()
+    
+    print("Policy Agent is running")
     policy()
 
     print("Pipeline Completed")
