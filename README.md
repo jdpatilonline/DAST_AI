@@ -1,12 +1,10 @@
-============================================================
+
 🚀 HOW TO RUN
-============================================================
 Step 1 — Copy everything into repo
 Step 2 — Push repo
 Step 3 — GitHub Actions runs automatically
-============================================================
+
 🚀 HOW TO RUN
-============================================================
 Step 1 — Copy everything into repo
 Step 2 — Push repo
 Step 3 — GitHub Actions runs automatically
