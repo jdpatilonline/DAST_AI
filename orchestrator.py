@@ -12,6 +12,10 @@ from agents.policy_agent import run as policy
 def main():
 
     print("Starting Security Orchestrator")
+
+    if os.getenv("ENTERPRISE_DEBUG") == "true":
+        print("enterprise_debug is running")
+        run_enterprise_debug()
     
     print("ZAP is running")
     zap()
