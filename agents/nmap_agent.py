@@ -2,11 +2,34 @@ import subprocess
 import os
 
 HOST = os.getenv("HOST")
+
 REPORT_DIR = "reports/nmap"
+REPORT_FILE = f"{REPORT_DIR}/nmap.xml"
+
 os.makedirs(REPORT_DIR, exist_ok=True)
 
 
+def preview_report():
+
+    print("\n===== NMAP REPORT PREVIEW (cat first 5 lines) =====")
+
+    if not os.path.exists(REPORT_FILE):
+        print("❌ Report file not found")
+        return
+
+    try:
+        subprocess.run(
+            f"cat {REPORT_FILE} | head -n 5",
+            shell=True
+        )
+    except Exception as e:
+        print("❌ Error previewing report:", e)
+
+    print("===== END REPORT PREVIEW =====\n")
+
+
 def run():
+
     workspace = os.getcwd()
 
     print("\n===== NMAP ENTERPRISE SCAN =====")
@@ -35,7 +58,11 @@ def run():
     ]
 
     try:
-        result = subprocess.run(nmap_cmd, capture_output=True, text=True)
+        result = subprocess.run(
+            nmap_cmd,
+            capture_output=True,
+            text=True
+        )
 
         if result.returncode != 0:
             print("⚠ Nmap exited with non-zero code:", result.returncode)
@@ -47,16 +74,7 @@ def run():
     except Exception as e:
         print("❌ Error running Nmap:", e)
 
-    # Validate Docker volume
-    print("\nValidating Docker mount for Nmap...")
-    try:
-        mount_test = subprocess.run(
-            ["docker", "run", "--rm", "-v", f"{workspace}/reports/nmap:/data", "alpine", "ls", "/data"],
-            capture_output=True, text=True
-        )
-        print("Files inside container /data:")
-        print(mount_test.stdout)
-    except Exception as e:
-        print("❌ Docker mount validation failed:", e)
+    # ✅ Preview using cat
+    preview_report()
 
     print("===== NMAP SCAN COMPLETED =====\n")
