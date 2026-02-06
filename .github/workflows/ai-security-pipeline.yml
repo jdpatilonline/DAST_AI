@@ -11,7 +11,9 @@ jobs:
       REPORTS_DIR: reports
       HOST: testphp.vulnweb.com
       ENTERPRISE_DEBUG: "true"
-
+      TARGET_URL: "http://testphp.vulnweb.com/"
+      OLLAMA_MODEL: mistral
+      
     steps:
     # -------------------------------------------------
     # Checkout Repo (MANDATORY)
