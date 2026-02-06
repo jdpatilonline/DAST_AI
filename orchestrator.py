@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
-from enterprise_debug import run_enterprise_debug
+
+from agents.enterprise_debug import run_enterprise_debug
 from agents.zap_agent import run as zap
 from agents.semgrep_agent import run as semgrep
 from agents.trufflehog_agent import run as trufflehog
