@@ -10,6 +10,7 @@ jobs:
     env:
       REPORTS_DIR: reports
       HOST: testphp.vulnweb.com
+      ENTERPRISE_DEBUG: "true"
 
     steps:
     # -------------------------------------------------
