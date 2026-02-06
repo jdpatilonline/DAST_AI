@@ -1,6 +1,5 @@
 import subprocess
 import os
-import json
 
 REPORT_DIR = "reports/semgrep"
 REPORT_FILE = f"{REPORT_DIR}/semgrep.json"
@@ -8,43 +7,27 @@ REPORT_FILE = f"{REPORT_DIR}/semgrep.json"
 os.makedirs(REPORT_DIR, exist_ok=True)
 
 
-def print_semgrep_report():
+def preview_report():
 
-    print("\n===== SEMGREP REPORT CONTENT =====")
+    print("\n===== SEMGREP REPORT PREVIEW (cat first 5 lines) =====")
 
     if not os.path.exists(REPORT_FILE):
-        print("❌ Semgrep report not found")
+        print("❌ Report file not found")
         return
 
     try:
-        with open(REPORT_FILE, "r") as f:
-            data = json.load(f)
-
-        results = data.get("results", [])
-
-        if not results:
-            print("✅ No Semgrep findings")
-            return
-
-        print(f"⚠ Total Findings: {len(results)}\n")
-
-        for finding in results:
-            print("Rule:", finding.get("check_id"))
-            print("File:", finding.get("path"))
-            print("Severity:", finding.get("extra", {}).get("severity"))
-            print("Message:", finding.get("extra", {}).get("message"))
-            print("-" * 50)
-
-    except json.JSONDecodeError:
-        print("❌ Invalid JSON format in Semgrep report")
-
+        subprocess.run(
+            f"cat {REPORT_FILE} | head -n 5",
+            shell=True
+        )
     except Exception as e:
-        print("❌ Error reading Semgrep report:", e)
+        print("❌ Error previewing report:", e)
 
-    print("===== END SEMGREP REPORT =====\n")
+    print("===== END REPORT PREVIEW =====\n")
 
 
 def run():
+
     workspace = os.getcwd()
 
     print("\n===== SEMGREP ENTERPRISE SCAN =====")
@@ -84,7 +67,7 @@ def run():
     except Exception as e:
         print("❌ Error running Semgrep:", e)
 
-    # Print Semgrep JSON Results
-    print_semgrep_report()
+    # ✅ Preview using cat
+    preview_report()
 
     print("===== SEMGREP SCAN COMPLETED =====\n")
