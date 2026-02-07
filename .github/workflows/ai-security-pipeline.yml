@@ -56,12 +56,17 @@ jobs:
     # -------------------------------------------------
     # Start Ollama + Pull Model
     # -------------------------------------------------
-    - name: Start Ollama AI
+    - name: Start Ollama (Safe Enterprise Mode)
       run: |
-        ollama serve &
-        sleep 20
+        if lsof -i:11434; then
+          echo "✅ Ollama already running"
+        else
+          echo "Starting Ollama..."
+          ollama serve &
+          sleep 15
+        fi
         ollama pull mistral
-
+  
     # -------------------------------------------------
     # Debug Workspace (VERY IMPORTANT)
     # -------------------------------------------------
