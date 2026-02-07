@@ -58,8 +58,9 @@ jobs:
     - name: Start ZAP proxy tool
       run: |
         docker run -d -p 8080:8080 ghcr.io/zaproxy/zaproxy:stable \
-          zap.sh -daemon -port 8080 -host 0.0.0.0
-        sleep 30
+        zap.sh -daemon -port 8080 -host 0.0.0.0
+        echo "Waiting for ZAP..."
+        sleep 60
         
     # -------------------------------------------------
     # Run Orchestrator
