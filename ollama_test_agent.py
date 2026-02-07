@@ -98,7 +98,7 @@ def test_ai():
 
     payload = {
         "model": MODEL,
-        "prompt": "Print numbers from 1 to 10",
+        "prompt": "what are Top 10 OWASP Web vulnerabilities",
         "stream": False
     }
 
