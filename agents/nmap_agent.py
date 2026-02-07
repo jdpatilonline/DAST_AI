@@ -101,3 +101,8 @@ def run():
     preview_report()
 
     print("===== NMAP SCAN COMPLETED =====\n")
+    
+# Only Run If Executed Directly
+# -------------------------------------------------
+if __name__ == "__main__":
+    run()
