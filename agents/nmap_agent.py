@@ -9,25 +9,43 @@ REPORT_FILE = f"{REPORT_DIR}/nmap.xml"
 os.makedirs(REPORT_DIR, exist_ok=True)
 
 
+# -------------------------------------------------
+# Preview Report Using CAT (Enterprise Safe)
+# -------------------------------------------------
 def preview_report():
 
-    print("\n===== NMAP REPORT PREVIEW (cat first 5 lines) =====")
+    print("\n===== NMAP REPORT PREVIEW (cat first 30 lines) =====")
 
     if not os.path.exists(REPORT_FILE):
         print("❌ Report file not found")
         return
 
     try:
-        subprocess.run(
-            f"cat {REPORT_FILE} | head -n 30",
-            shell=True
+        cat_cmd = subprocess.Popen(
+            ["cat", REPORT_FILE],
+            stdout=subprocess.PIPE
         )
+
+        head_cmd = subprocess.Popen(
+            ["head", "-n", "30"],
+            stdin=cat_cmd.stdout,
+            stdout=subprocess.PIPE,
+            text=True
+        )
+
+        output, _ = head_cmd.communicate()
+
+        print(output)
+
     except Exception as e:
         print("❌ Error previewing report:", e)
 
     print("===== END REPORT PREVIEW =====\n")
 
 
+# -------------------------------------------------
+# Main Scan
+# -------------------------------------------------
 def run():
 
     workspace = os.getcwd()
@@ -68,13 +86,18 @@ def run():
             print("⚠ Nmap exited with non-zero code:", result.returncode)
             print("Stdout:", result.stdout)
             print("Stderr:", result.stderr)
+            return
         else:
             print("✅ Nmap scan completed successfully")
 
     except Exception as e:
         print("❌ Error running Nmap:", e)
+        return
 
-    # ✅ Preview using cat
+    # Small delay ensures Docker flushes file
+    import time
+    time.sleep(2)
+
     preview_report()
 
     print("===== NMAP SCAN COMPLETED =====\n")
