@@ -1,57 +1,87 @@
 import os
 import time
 import json
+import socket
 import subprocess
 import requests
 from zapv2 import ZAPv2
+
+
+# -------------------------------------------------
+# CONFIG
+# -------------------------------------------------
 
 TARGET = os.getenv("TARGET_URL")
 MODEL = os.getenv("OLLAMA_MODEL", "mistral")
 DEBUG = os.getenv("ENTERPRISE_DEBUG", "false").lower() == "true"
 
-REPORT_DIR = "reports/zap"
-os.makedirs(REPORT_DIR, exist_ok=True)
-
 ZAP_CONTAINER = "enterprise-zap"
-ZAP_PROXY = "http://127.0.0.1:8080"
+ZAP_PORT = 8080
+ZAP_PROXY = f"http://127.0.0.1:{ZAP_PORT}"
+ZAP_IMAGE = "ghcr.io/zaproxy/zaproxy:stable"
 
-zap = ZAPv2(proxies={"http": ZAP_PROXY, "https": ZAP_PROXY})
+REPORT_DIR = "reports/zap"
+AI_REPORT_DIR = "reports/ai"
+
+os.makedirs(REPORT_DIR, exist_ok=True)
+os.makedirs(AI_REPORT_DIR, exist_ok=True)
 
 
 # -------------------------------------------------
-# Debug Logger
+# DEBUG LOGGER
 # -------------------------------------------------
+
 def debug(msg):
     if DEBUG:
         print(f"[DEBUG] {msg}")
 
 
 # -------------------------------------------------
-# Start ZAP Container
+# PORT CHECK
 # -------------------------------------------------
-def start_zap_container():
 
-    print("\nStarting ZAP container...")
+def is_port_open(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        return sock.connect_ex(("127.0.0.1", port)) == 0
 
-    # Check if container already running
+
+# -------------------------------------------------
+# CONTAINER CHECK
+# -------------------------------------------------
+
+def container_running():
     result = subprocess.run(
         ["docker", "ps", "--filter", f"name={ZAP_CONTAINER}", "--format", "{{.Names}}"],
         capture_output=True, text=True
     )
+    return ZAP_CONTAINER in result.stdout
 
-    if ZAP_CONTAINER in result.stdout:
+
+# -------------------------------------------------
+# START ZAP CONTAINER
+# -------------------------------------------------
+
+def start_container():
+
+    print("\n🚀 Starting ZAP container...")
+
+    if container_running():
         print("✅ ZAP container already running")
-        return
+        return True
+
+    if is_port_open(ZAP_PORT):
+        print("⚠ Port already in use. Assuming ZAP running externally")
+        return True
 
     try:
         subprocess.run([
             "docker", "run", "-d",
             "--name", ZAP_CONTAINER,
-            "-p", "8080:8080",
-            "ghcr.io/zaproxy/zaproxy:stable",
+            "-p", f"{ZAP_PORT}:{ZAP_PORT}",
+            ZAP_IMAGE,
             "zap.sh",
             "-daemon",
-            "-port", "8080",
+            "-port", str(ZAP_PORT),
             "-host", "0.0.0.0",
             "-config", "api.disablekey=true",
             "-config", "api.addrs.addr.name=.*",
@@ -59,47 +89,80 @@ def start_zap_container():
         ], check=True)
 
         print("✅ ZAP container started")
+        return True
 
     except Exception as e:
         print("❌ Failed to start ZAP container:", e)
+        return False
 
 
 # -------------------------------------------------
-# Wait For ZAP Ready
+# WAIT FOR ZAP READY
 # -------------------------------------------------
-def wait_for_zap(timeout=900):
 
-    print("\nWaiting for ZAP to become ready...")
+def wait_for_api(timeout=900):
+
+    print("\n⏳ Waiting for ZAP API readiness...")
 
     start = time.time()
 
     while time.time() - start < timeout:
         try:
-            zap.core.version()
-            print("✅ ZAP is ready")
-            return True
-        except Exception as e:
-            print("ZAP still starting...",e)
-            time.sleep(30)
+            r = requests.get(
+                f"{ZAP_PROXY}/JSON/core/view/version/",
+                timeout=10
+            )
 
-    print("❌ ZAP failed to start")
-    print("Debug Container Logs")
-    subprocess.run(["docker", "ps", "-a"])
-    print("Debug Container Logs for zap")
-    subprocess.run(["docker", "logs", ZAP_CONTAINER])
+            if r.status_code == 200:
+                print("✅ ZAP API is ready")
+                return True
+
+        except Exception as e:
+            debug(f"ZAP not ready yet: {e}")
+
+        time.sleep(15)
+
+    print("❌ ZAP failed to become ready")
+    dump_debug()
     return False
 
 
 # -------------------------------------------------
-# Ollama AI Helper
+# DEBUG TELEMETRY
 # -------------------------------------------------
+
+def dump_debug():
+    subprocess.run(["docker", "ps", "-a"])
+    subprocess.run(["docker", "logs", ZAP_CONTAINER])
+
+
+# -------------------------------------------------
+# BUILD ZAP CLIENT
+# -------------------------------------------------
+
+def build_client():
+    zap = ZAPv2(
+        apikey="",
+        proxies={"http": ZAP_PROXY, "https": ZAP_PROXY}
+    )
+
+    # Fix zapv2 proxy rewrite bug
+    zap._ZAPv2__base = ZAP_PROXY
+
+    return zap
+
+
+# -------------------------------------------------
+# AI HELPER
+# -------------------------------------------------
+
 def ask_ai(prompt):
 
     try:
         r = requests.post(
             "http://127.0.0.1:11434/api/generate",
             json={"model": MODEL, "prompt": prompt, "stream": False},
-            timeout=120
+            timeout=600
         )
 
         return r.json().get("response", "No AI response")
@@ -110,93 +173,128 @@ def ask_ai(prompt):
 
 
 # -------------------------------------------------
-# Run Scan
+# LOAD ALL JSON REPORTS
 # -------------------------------------------------
+
+def load_reports():
+
+    findings = []
+
+    if not os.path.exists("reports"):
+        return findings
+
+    for root, _, files in os.walk("reports"):
+        for f in files:
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(root, f)) as file:
+                        findings.append(file.read()[:3000])
+                except Exception:
+                    pass
+
+    return findings
+
+
+# -------------------------------------------------
+# EXECUTIVE AI SUMMARY
+# -------------------------------------------------
+
+def generate_executive_summary():
+
+    findings = load_reports()
+
+    if not findings:
+        print("⚠ No reports found for AI summary")
+        return
+
+    prompt = (
+        "Create executive vulnerability summary from findings:\n" +
+        "\n".join(findings)
+    )
+
+    summary = ask_ai(prompt)
+
+    with open(f"{AI_REPORT_DIR}/executive_summary.txt", "w") as f:
+        f.write(summary)
+
+    print("✅ Executive AI summary generated")
+
+
+# -------------------------------------------------
+# RUN ZAP SCAN + AI ENRICHMENT
+# -------------------------------------------------
+
 def run():
 
-    workspace = os.getcwd()
-
-    print("\n===== ZAP ENTERPRISE SCAN =====")
-    print("Workspace:", workspace)
+    print("\n===== ENTERPRISE ZAP + AI SCAN =====")
     print("Target:", TARGET)
 
     if not TARGET:
         print("❌ TARGET_URL not set")
         return
 
-    # Start ZAP Tool
-    start_zap_container()
-
-    if not wait_for_zap():
+    if not start_container():
         return
 
-    # ---------------- Spider--------
-    try:
-        print("\nRunning ZAP Spider...")
+    if not wait_for_api():
+        return
 
-        zap.urlopen(TARGET)
+    zap = build_client()
+
+    # ---------------- Spider
+    print("\nRunning ZAP Spider...")
+    zap.urlopen(TARGET)
+    time.sleep(5)
+
+    spider_id = zap.spider.scan(TARGET)
+
+    while int(zap.spider.status(spider_id)) < 100:
+        print("Spider progress:", zap.spider.status(spider_id), "%")
         time.sleep(5)
 
-        spider_id = zap.spider.scan(TARGET)
-
-        while int(zap.spider.status(spider_id)) < 100:
-            print(f"Spider progress: {zap.spider.status(spider_id)}%")
-            time.sleep(3)
-
-        print("✅ Spider completed")
-
-    except Exception as e:
-        print("❌ Spider failed:", e)
-        return
-
     # ---------------- Active Scan
-    try:
-        print("\nRunning ZAP Active Scan...")
+    print("\nRunning ZAP Active Scan...")
+    scan_id = zap.ascan.scan(TARGET)
 
-        scan_id = zap.ascan.scan(TARGET)
+    while int(zap.ascan.status(scan_id)) < 100:
+        print("Active progress:", zap.ascan.status(scan_id), "%")
+        time.sleep(10)
 
-        while int(zap.ascan.status(scan_id)) < 100:
-            print(f"Active scan progress: {zap.ascan.status(scan_id)}%")
-            time.sleep(5)
+    # ---------------- Collect Alerts
+    alerts = zap.core.alerts()
+    enriched = []
 
-        print("✅ Active scan completed")
+    print(f"\nProcessing {len(alerts)} alerts with AI...")
 
-    except Exception as e:
-        print("❌ Active scan failed:", e)
-        return
+    for alert in alerts:
 
-    # ---------------- Alerts + AI
-    try:
-        alerts = zap.core.alerts()
-        enriched = []
+        remediation = ask_ai(
+            f"Explain vulnerability and remediation:\n{json.dumps(alert, indent=2)}"
+        )
 
-        print(f"\nProcessing {len(alerts)} alerts with AI...")
+        enriched.append({
+            **alert,
+            "ai_remediation": remediation
+        })
 
-        for alert in alerts:
+    zap_report = f"{REPORT_DIR}/zap_ai.json"
 
-            remediation = ask_ai(
-                f"Explain vulnerability and remediation:\n{json.dumps(alert, indent=2)}"
-            )
+    with open(zap_report, "w") as f:
+        json.dump(enriched, f, indent=2)
 
-            enriched.append({
-                **alert,
-                "ai_remediation": remediation
-            })
+    print("✅ ZAP AI report saved")
 
-        report_file = f"{REPORT_DIR}/zap_ai.json"
+    # ---------------- Executive Summary
+    generate_executive_summary()
 
-        with open(report_file, "w") as f:
-            json.dump(enriched, f, indent=2)
+    print("===== ENTERPRISE SCAN COMPLETED =====\n")
 
-        print(f"✅ Report saved: {report_file}")
 
-    except Exception as e:
-        print("❌ Alert processing failed:", e)
-
-    print("===== ZAP SCAN COMPLETED =====\n")
-    
-# Only Run If Executed Directly
 # -------------------------------------------------
+# SAFE ENTRY POINT
+# -------------------------------------------------
+
 if __name__ == "__main__":
     run()
+
 
