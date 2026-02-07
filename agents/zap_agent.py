@@ -120,13 +120,13 @@ def run():
         print("❌ TARGET_URL not set")
         return
 
-    # Start ZAP
+    # Start ZAP Tool
     start_zap_container()
 
     if not wait_for_zap():
         return
 
-    # ---------------- Spider
+    # ---------------- Spider--------
     try:
         print("\nRunning ZAP Spider...")
 
@@ -190,8 +190,3 @@ def run():
         print("❌ Alert processing failed:", e)
 
     print("===== ZAP SCAN COMPLETED =====\n")
-
-
-# -------------------------------------------------
-if __name__ == "__main__":
-    run()
