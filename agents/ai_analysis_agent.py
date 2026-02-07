@@ -94,3 +94,8 @@ def run():
         print(f"❌ Failed to write executive summary: {e}")
 
     print("===== AI ANALYSIS COMPLETED =====\n")
+
+# Only Run If Executed Directly
+# -------------------------------------------------
+if __name__ == "__main__":
+    run()
