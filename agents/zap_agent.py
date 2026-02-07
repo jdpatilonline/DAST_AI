@@ -161,5 +161,5 @@ Explain vulnerability and provide remediation:
 # -------------------------------------------------
 # Direct Execution Support
 # -------------------------------------------------
-#if __name__ == "__main__":
-#    run()
+if __name__ == "__main__":
+    run()
