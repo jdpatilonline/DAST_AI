@@ -10,103 +10,156 @@ MODEL = os.getenv("OLLAMA_MODEL", "mistral")
 REPORT_DIR = "reports/zap"
 os.makedirs(REPORT_DIR, exist_ok=True)
 
+ZAP_PROXY = "http://127.0.0.1:8080"
+
 zap = ZAPv2(proxies={
-    "http": "http://127.0.0.1:8080",
-    "https": "http://127.0.0.1:8080"
+    "http": ZAP_PROXY,
+    "https": ZAP_PROXY
 })
 
 
+# -------------------------------------------------
+# AI Helper
+# -------------------------------------------------
 def ask_ai(prompt):
-    """
-    Ask Ollama AI for remediation, explanation, or validation.
-    """
+
     try:
         r = requests.post(
-            "http://localhost:11434/api/generate",
+            "http://127.0.0.1:11434/api/generate",
             json={"model": MODEL, "prompt": prompt, "stream": False},
             timeout=120
         )
-        return r.json().get("response", "No response from AI")
+
+        return r.json().get("response", "No AI response")
+
     except Exception as e:
         print("❌ AI request failed:", e)
         return "AI request failed"
 
 
-def run():
-    workspace = os.getcwd()
+# -------------------------------------------------
+# Enterprise ZAP Health Check
+# -------------------------------------------------
+def wait_for_zap(timeout=180):
 
-    # ----------------------------
-    # Enterprise debug info
-    # ----------------------------
-    print("\n===== ZAP ENTERPRISE SCAN =====")
-    print("Workspace Path:", workspace)
-    print("Target URL:", TARGET)
+    print("\nWaiting for ZAP to become ready...")
 
-    try:
-        print("Workspace Files:", os.listdir(workspace))
-    except Exception as e:
-        print("Error listing workspace files:", e)
+    start = time.time()
 
-    if not TARGET:
-        print("❌ TARGET_URL not set. Skipping ZAP scan.")
-        return
+    while time.time() - start < timeout:
 
-    # ----------------------------
-    # ZAP Health Check
-    # ----------------------------
-    try:
-        resp = requests.get("http://127.0.0.1:8080")
-        if resp.status_code == 200:
-            print("✅ ZAP proxy is running")
-    except Exception as e:
-        print("❌ ZAP proxy not reachable:", e)
-        return
+        try:
+            zap.core.version()
+            print("✅ ZAP is ready")
+            return True
 
-    # ----------------------------
-    # Start Scan
-    # ----------------------------
-    try:
-        print("Running ZAP spider...")
-        zap.urlopen(TARGET)
-        time.sleep(5)
-        spider = zap.spider.scan(TARGET)
-        while int(zap.spider.status(spider)) < 100:
-            print(f"Spider progress: {zap.spider.status(spider)}%")
-            time.sleep(2)
-
-        print("Running ZAP active scan...")
-        active = zap.ascan.scan(TARGET)
-        while int(zap.ascan.status(active)) < 100:
-            print(f"Active scan progress: {zap.ascan.status(active)}%")
+        except Exception:
+            print("ZAP still starting...")
             time.sleep(5)
 
-    except Exception as e:
-        print("❌ ZAP scanning failed:", e)
+    print("❌ ZAP failed to start within timeout")
+    return False
+
+
+# -------------------------------------------------
+# Main Scan
+# -------------------------------------------------
+def run():
+
+    workspace = os.getcwd()
+
+    print("\n===== ZAP ENTERPRISE SCAN =====")
+    print("Workspace:", workspace)
+    print("Target:", TARGET)
+
+    if not TARGET:
+        print("❌ TARGET_URL not set")
         return
 
-    # ----------------------------
-    # Collect alerts and ask AI
-    # ----------------------------
+    # ------------------------------------
+    # ZAP Health Polling
+    # ------------------------------------
+    if not wait_for_zap():
+        return
+
+    # ------------------------------------
+    # Spider Scan
+    # ------------------------------------
+    try:
+        print("\nRunning ZAP Spider...")
+
+        zap.urlopen(TARGET)
+        time.sleep(5)
+
+        spider_id = zap.spider.scan(TARGET)
+
+        while int(zap.spider.status(spider_id)) < 100:
+            print(f"Spider progress: {zap.spider.status(spider_id)}%")
+            time.sleep(3)
+
+        print("✅ Spider completed")
+
+    except Exception as e:
+        print("❌ Spider failed:", e)
+        return
+
+    # ------------------------------------
+    # Active Scan
+    # ------------------------------------
+    try:
+        print("\nRunning ZAP Active Scan...")
+
+        scan_id = zap.ascan.scan(TARGET)
+
+        while int(zap.ascan.status(scan_id)) < 100:
+            print(f"Active scan progress: {zap.ascan.status(scan_id)}%")
+            time.sleep(5)
+
+        print("✅ Active scan completed")
+
+    except Exception as e:
+        print("❌ Active scan failed:", e)
+        return
+
+    # ------------------------------------
+    # Collect Alerts
+    # ------------------------------------
     try:
         alerts = zap.core.alerts()
         enriched = []
 
-        print(f"Found {len(alerts)} alerts. Asking AI for remediation...")
+        print(f"\nProcessing {len(alerts)} alerts with AI...")
 
         for alert in alerts:
-            remediation = ask_ai(f"Provide remediation and explanation for this alert:\n{alert}")
+
+            remediation = ask_ai(
+                f"""
+Explain vulnerability and provide remediation:
+
+{json.dumps(alert, indent=2)}
+"""
+            )
+
             enriched.append({
                 **alert,
-                "remediation": remediation
+                "ai_remediation": remediation
             })
 
-        report_path = os.path.join(REPORT_DIR, "zap_ai.json")
-        with open(report_path, "w") as f:
+        report_file = f"{REPORT_DIR}/zap_ai.json"
+
+        with open(report_file, "w") as f:
             json.dump(enriched, f, indent=2)
 
-        print(f"✅ ZAP scan report written to {report_path}")
+        print(f"✅ Report saved: {report_file}")
 
     except Exception as e:
-        print("❌ Failed to process ZAP alerts:", e)
+        print("❌ Alert processing failed:", e)
 
     print("===== ZAP SCAN COMPLETED =====\n")
+
+
+# -------------------------------------------------
+# Direct Execution Support
+# -------------------------------------------------
+#if __name__ == "__main__":
+#    run()
