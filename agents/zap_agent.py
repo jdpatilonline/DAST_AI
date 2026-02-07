@@ -1,25 +1,93 @@
 import os
 import time
 import json
+import subprocess
 import requests
 from zapv2 import ZAPv2
 
 TARGET = os.getenv("TARGET_URL")
 MODEL = os.getenv("OLLAMA_MODEL", "mistral")
+DEBUG = os.getenv("ENTERPRISE_DEBUG", "false").lower() == "true"
 
 REPORT_DIR = "reports/zap"
 os.makedirs(REPORT_DIR, exist_ok=True)
 
+ZAP_CONTAINER = "enterprise-zap"
 ZAP_PROXY = "http://127.0.0.1:8080"
 
-zap = ZAPv2(proxies={
-    "http": ZAP_PROXY,
-    "https": ZAP_PROXY
-})
+zap = ZAPv2(proxies={"http": ZAP_PROXY, "https": ZAP_PROXY})
 
 
 # -------------------------------------------------
-# AI Helper
+# Debug Logger
+# -------------------------------------------------
+def debug(msg):
+    if DEBUG:
+        print(f"[DEBUG] {msg}")
+
+
+# -------------------------------------------------
+# Start ZAP Container
+# -------------------------------------------------
+def start_zap_container():
+
+    print("\nStarting ZAP container...")
+
+    # Check if container already running
+    result = subprocess.run(
+        ["docker", "ps", "--filter", f"name={ZAP_CONTAINER}", "--format", "{{.Names}}"],
+        capture_output=True, text=True
+    )
+
+    if ZAP_CONTAINER in result.stdout:
+        print("✅ ZAP container already running")
+        return
+
+    try:
+        subprocess.run([
+            "docker", "run", "-d",
+            "--name", ZAP_CONTAINER,
+            "-p", "8080:8080",
+            "ghcr.io/zaproxy/zaproxy:stable",
+            "zap.sh",
+            "-daemon",
+            "-port", "8080",
+            "-host", "0.0.0.0",
+            "-config", "api.disablekey=true",
+            "-config", "api.addrs.addr.name=.*",
+            "-config", "api.addrs.addr.regex=true"
+        ], check=True)
+
+        print("✅ ZAP container started")
+
+    except Exception as e:
+        print("❌ Failed to start ZAP container:", e)
+
+
+# -------------------------------------------------
+# Wait For ZAP Ready
+# -------------------------------------------------
+def wait_for_zap(timeout=300):
+
+    print("\nWaiting for ZAP to become ready...")
+
+    start = time.time()
+
+    while time.time() - start < timeout:
+        try:
+            zap.core.version()
+            print("✅ ZAP is ready")
+            return True
+        except Exception:
+            print("ZAP still starting...")
+            time.sleep(5)
+
+    print("❌ ZAP failed to start")
+    return False
+
+
+# -------------------------------------------------
+# Ollama AI Helper
 # -------------------------------------------------
 def ask_ai(prompt):
 
@@ -38,31 +106,7 @@ def ask_ai(prompt):
 
 
 # -------------------------------------------------
-# Enterprise ZAP Health Check
-# -------------------------------------------------
-def wait_for_zap(timeout=180):
-
-    print("\nWaiting for ZAP to become ready...")
-
-    start = time.time()
-
-    while time.time() - start < timeout:
-
-        try:
-            zap.core.version()
-            print("✅ ZAP is ready")
-            return True
-
-        except Exception:
-            print("ZAP still starting...")
-            time.sleep(5)
-
-    print("❌ ZAP failed to start within timeout")
-    return False
-
-
-# -------------------------------------------------
-# Main Scan
+# Run Scan
 # -------------------------------------------------
 def run():
 
@@ -76,15 +120,13 @@ def run():
         print("❌ TARGET_URL not set")
         return
 
-    # ------------------------------------
-    # ZAP Health Polling
-    # ------------------------------------
+    # Start ZAP
+    start_zap_container()
+
     if not wait_for_zap():
         return
 
-    # ------------------------------------
-    # Spider Scan
-    # ------------------------------------
+    # ---------------- Spider
     try:
         print("\nRunning ZAP Spider...")
 
@@ -103,9 +145,7 @@ def run():
         print("❌ Spider failed:", e)
         return
 
-    # ------------------------------------
-    # Active Scan
-    # ------------------------------------
+    # ---------------- Active Scan
     try:
         print("\nRunning ZAP Active Scan...")
 
@@ -121,9 +161,7 @@ def run():
         print("❌ Active scan failed:", e)
         return
 
-    # ------------------------------------
-    # Collect Alerts
-    # ------------------------------------
+    # ---------------- Alerts + AI
     try:
         alerts = zap.core.alerts()
         enriched = []
@@ -133,11 +171,7 @@ def run():
         for alert in alerts:
 
             remediation = ask_ai(
-                f"""
-Explain vulnerability and provide remediation:
-
-{json.dumps(alert, indent=2)}
-"""
+                f"Explain vulnerability and remediation:\n{json.dumps(alert, indent=2)}"
             )
 
             enriched.append({
@@ -158,8 +192,6 @@ Explain vulnerability and provide remediation:
     print("===== ZAP SCAN COMPLETED =====\n")
 
 
-# -------------------------------------------------
-# Direct Execution Support
 # -------------------------------------------------
 if __name__ == "__main__":
     run()
