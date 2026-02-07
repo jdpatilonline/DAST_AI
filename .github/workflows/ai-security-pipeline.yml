@@ -81,6 +81,21 @@ jobs:
       run: |
         python agents/zap_agent.py
         ls -laR reports
+
+
+    # Run Ai_analysis_agent
+    # -------------------------------------------------
+    - name: Run Ai_analysis_agent
+      run: |
+        python agents/ai_analysis_agent.py
+        ls -laR reports
+
+    # Run policy_agent
+    # -------------------------------------------------
+    - name: Run policy_agent
+      run: |
+        python agents/policy_agent.py
+        ls -laR reports
         
     # -------------------------------------------------
     # Run Orchestrator
@@ -88,6 +103,12 @@ jobs:
     - name: Run Security Pipeline
       run: python orchestrator.py
 
+    # Show all files in report Folder
+    # -------------------------------------------------
+    - name: Show all files in report Folder
+      run: |
+        ls -laR reports/
+        
     # -------------------------------------------------
     # Upload Artifacts
     # -------------------------------------------------
