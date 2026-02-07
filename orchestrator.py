@@ -7,8 +7,8 @@ from agents.enterprise_debug import run_enterprise_debug
 #from agents.trufflehog_agent import run as trufflehog
 #from agents.nmap_agent import run as nmap
 #from agents.zap_agent import run as zap
-from agents.ai_analysis_agent import run as ai_analysis
-from agents.policy_agent import run as policy
+#from agents.ai_analysis_agent import run as ai_analysis
+#from agents.policy_agent import run as policy
 
 def main():
 
@@ -36,15 +36,15 @@ def main():
    # zap()
 
     print("==========================================")
-    print("ai_analysis Funtion is running")
-    ai_analysis()
+    #print("ai_analysis Funtion is running")
+    #ai_analysis()
 
     print("==========================================")
-    print("Policy Agent Funtion is running")
-    policy()
+    #print("Policy Agent Funtion is running")
+   # policy()
 
     print("==========================================")
-    print("Pipeline Funtion Completed")
+   # print("Pipeline Funtion Completed")
 
 if __name__ == "__main__":
     main()
