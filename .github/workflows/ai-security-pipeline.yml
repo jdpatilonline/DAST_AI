@@ -72,7 +72,7 @@ jobs:
    # -------------------------------------------------
     - name: Install and Run Nmap
       run: |
-        python  agents/nmap_agent.py
+        # python  agents/nmap_agent.py
         ls -laR reports
         
     # Install and Run zap_agent 
