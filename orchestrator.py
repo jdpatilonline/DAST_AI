@@ -20,20 +20,20 @@ def main():
     #run_enterprise_debug()
 
     print("==========================================")
-    print("Semgrep Funtion is running")
-    semgrep()
+    #print("Semgrep Funtion is running")
+    #semgrep()
 
     print("==========================================")
-    print("Trufflehog Funtion is running")
-    trufflehog()
+    #print("Trufflehog Funtion is running")
+    #trufflehog()
 
     print("==========================================")
-    print("Nmap Funtion is running")
-    nmap()
+    #print("Nmap Funtion is running")
+    #nmap()
 
     print("==========================================")
-    print("ZAP Funtion is running")
-    zap()
+   # print("ZAP Funtion is running")
+   # zap()
 
     print("==========================================")
     print("ai_analysis Funtion is running")
