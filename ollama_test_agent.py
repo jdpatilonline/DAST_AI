@@ -137,3 +137,6 @@ def run():
     test_ai()
 
     print("===== OLLAMA AGENT COMPLETED =====\n")
+
+if __name__ == "__main__":
+    run()
