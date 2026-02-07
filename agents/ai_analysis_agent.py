@@ -58,6 +58,7 @@ def run():
     print("Workspace Path:", workspace)
     try:
         print("Workspace Files:", os.listdir(workspace))
+        subprocess.run("ls -laR reports/ ", shell=True)
     except Exception as e:
         print("Error listing workspace files:", e)
 
@@ -88,6 +89,7 @@ def run():
         with open(summary_file, "w") as f:
             f.write(summary)
         print(f"✅ Executive summary written to {summary_file}")
+        subprocess.run("ls -al reports/ai", shell=True)
     except Exception as e:
         print(f"❌ Failed to write executive summary: {e}")
 
