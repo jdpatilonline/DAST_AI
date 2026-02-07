@@ -190,3 +190,9 @@ def run():
         print("❌ Alert processing failed:", e)
 
     print("===== ZAP SCAN COMPLETED =====\n")
+    
+# Only Run If Executed Directly
+# -------------------------------------------------
+if __name__ == "__main__":
+    run()
+
