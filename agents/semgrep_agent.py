@@ -17,8 +17,7 @@ def preview_report():
 
     try:
         subprocess.run(
-            f"cat {REPORT_FILE} | head -n 20",
-            shell=True
+            f"cat {REPORT_FILE} | head -n 20"
         )
     except Exception as e:
         print("❌ Error previewing report:", e)
