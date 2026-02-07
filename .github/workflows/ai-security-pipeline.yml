@@ -69,8 +69,8 @@ jobs:
         ls -laR reports
 
    # Install and Run Nmap
-    # -------------------------------------------------
-    - name: Install and Run 
+   # -------------------------------------------------
+    - name: Install and Run Nmap
       run: |
         python  agents/nmap_agent.py
         ls -laR reports
