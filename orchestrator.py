@@ -13,38 +13,38 @@ from agents.policy_agent import run as policy
 def main():
 
     print("==========================================")
-    print("Starting Security Orchestrator")
+    print("Starting Security Orchestrator Funtiona")
 
     print("==========================================")
-    print("enterprise_debug is running")
-    run_enterprise_debug()
+    print("enterprise_debug Funtion is running")
+    #run_enterprise_debug()
 
     print("==========================================")
-    print("ZAP is running")
+    print("ZAP Funtion is running")
     zap()
 
     print("==========================================")
-    print("Semgrep is running")
+    print("Semgrep Funtion is running")
     semgrep()
 
     print("==========================================")
-    print("Trufflehog is running")
+    print("Trufflehog Funtion is running")
     trufflehog()
 
     print("==========================================")
-    print("Nmap is running")
+    print("Nmap Funtion is running")
     nmap()
 
     print("==========================================")
-    print("ai_analysis is running")
+    print("ai_analysis Funtion is running")
     ai_analysis()
 
     print("==========================================")
-    print("Policy Agent is running")
+    print("Policy Agent Funtion is running")
     policy()
 
     print("==========================================")
-    print("Pipeline Completed")
+    print("Pipeline Funtion Completed")
 
 if __name__ == "__main__":
     main()
