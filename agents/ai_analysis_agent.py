@@ -15,7 +15,7 @@ def ask_ai(prompt):
         r = requests.post(
             "http://localhost:11434/api/generate",
             json={"model": MODEL, "prompt": prompt, "stream": False},
-            timeout=120
+            timeout=600
         )
         return r.json().get("response", "No response from AI")
     except Exception as e:
