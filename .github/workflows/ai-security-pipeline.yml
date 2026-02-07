@@ -44,13 +44,33 @@ jobs:
     - name: Debug Files
       run: |
         pwd
-        ls -la
+        ls -laR
         
     # -------------------------------------------------
     # Install Ollama + Run Ollma + Test Ollma AI 
     # -------------------------------------------------
     - name: Install Ollama + Run Ollma + Test Ollma AI 
       run: python ollama_test_agent.py
+
+    # Install and Run Semgrep
+    # -------------------------------------------------
+    - name: Install and Run Semgrep
+      run: python agents/semgrep_agent.py
+
+    # Install and Run  Trufflehog agent
+    # -------------------------------------------------
+    - name: Install and Run  agent
+      run: python  agents/trufflehog_agent.py
+
+   # Install and Run Nmap
+    # -------------------------------------------------
+    - name: Install and Run 
+      run: python  agents/nmap_agent.py
+    
+    # Install and Run zap_agent 
+    # -------------------------------------------------
+    - name: Install and Run zap_agent
+      run: python agents/zap_agent.py
         
     # -------------------------------------------------
     # Run Orchestrator
