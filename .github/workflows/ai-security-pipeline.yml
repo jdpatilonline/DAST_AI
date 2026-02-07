@@ -41,7 +41,7 @@ jobs:
     # -------------------------------------------------
     # Start ZAP
     # -------------------------------------------------
-    - name: Start ZAP
+    - name: Start ZAP proxy tool
       run: |
         docker run -d -p 8080:8080 ghcr.io/zaproxy/zaproxy:stable \
           zap.sh -daemon -port 8080 -host 0.0.0.0
@@ -56,7 +56,7 @@ jobs:
     # -------------------------------------------------
     # Start Ollama + Pull Model
     # -------------------------------------------------
-    - name: Start Ollama
+    - name: Start Ollama AI
       run: |
         ollama serve &
         sleep 20
