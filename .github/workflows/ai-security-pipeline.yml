@@ -39,6 +39,20 @@ jobs:
       run: mkdir -p reports
 
     # -------------------------------------------------
+    # Debug Workspace (VERY IMPORTANT)
+    # -------------------------------------------------
+    - name: Debug Files
+      run: |
+        pwd
+        ls -la
+        
+    # -------------------------------------------------
+    # Install Ollama + Run Ollma + Test Ollma AI 
+    # -------------------------------------------------
+    - name: Install Ollama + Run Ollma + Test Ollma AI 
+      run: python orchestrator.py
+
+    # -------------------------------------------------
     # Start ZAP
     # -------------------------------------------------
     - name: Start ZAP proxy tool
@@ -46,35 +60,7 @@ jobs:
         docker run -d -p 8080:8080 ghcr.io/zaproxy/zaproxy:stable \
           zap.sh -daemon -port 8080 -host 0.0.0.0
         sleep 30
-
-    # -------------------------------------------------
-    # Install Ollama
-    # -------------------------------------------------
-    - name: Install Ollama
-      run: curl -fsSL https://ollama.com/install.sh | sh
-
-    # -------------------------------------------------
-    # Start Ollama + Pull Model
-    # -------------------------------------------------
-    - name: Start Ollama (Safe Enterprise Mode)
-      run: |
-        if lsof -i:11434; then
-          echo "✅ Ollama already running"
-        else
-          echo "Starting Ollama..."
-          ollama serve &
-          sleep 15
-        fi
-        ollama pull mistral
-  
-    # -------------------------------------------------
-    # Debug Workspace (VERY IMPORTANT)
-    # -------------------------------------------------
-    - name: Debug Files
-      run: |
-        pwd
-        ls -la
-
+        
     # -------------------------------------------------
     # Run Orchestrator
     # -------------------------------------------------
