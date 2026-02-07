@@ -17,7 +17,7 @@ def preview_report():
         return
 
     try:
-        subprocess.run("cat reports/trufflehog/trufflehog.json ", shell=True))
+        subprocess.run("cat reports/trufflehog/trufflehog.json ", shell=True)
 
     except Exception as e:
         print("❌ Preview error:", e)
