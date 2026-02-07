@@ -14,14 +14,14 @@ os.makedirs(REPORT_DIR, exist_ok=True)
 # -------------------------------------------------
 def preview_report():
 
-    print("\n===== NMAP REPORT PREVIEW (cat first 30 lines) =====")
+    print("\n===== NMAP REPORT PREVIEW=====")
 
     if not os.path.exists(REPORT_FILE):
         print("❌ Report file not found")
         return
 
     try:
-      subprocess.run("cat reports/nmap/nmap.json ", shell=True)
+      subprocess.run("cat reports/nmap/nmap.xml ", shell=True)
 
     except Exception as e:
         print("❌ Error previewing report:", e)
