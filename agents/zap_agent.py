@@ -67,7 +67,7 @@ def start_zap_container():
 # -------------------------------------------------
 # Wait For ZAP Ready
 # -------------------------------------------------
-def wait_for_zap(timeout=300):
+def wait_for_zap(timeout=900):
 
     print("\nWaiting for ZAP to become ready...")
 
@@ -80,9 +80,10 @@ def wait_for_zap(timeout=300):
             return True
         except Exception:
             print("ZAP still starting...")
-            time.sleep(5)
+            time.sleep(15)
 
     print("❌ ZAP failed to start")
+    subprocess.run(["docker", "logs", "zap"])
     return False
 
 
