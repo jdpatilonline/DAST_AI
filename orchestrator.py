@@ -13,7 +13,7 @@ from agents.policy_agent import run as policy
 def main():
 
     print("==========================================")
-    print("Starting Security Orchestrator Funtiona")
+    print("Starting Security Orchestrator Funtion")
 
     print("==========================================")
     print("enterprise_debug Funtion is running")
