@@ -4,42 +4,57 @@ import os
 REPORT_DIR = "reports/trufflehog"
 REPORT_FILE = f"{REPORT_DIR}/trufflehog.json"
 
-os.makedirs(REPORT_DIR, exist_ok=True)
 
-
+# -------------------------------------------------
+# Enterprise Preview Engine
+# -------------------------------------------------
 def preview_report():
 
-    print("\n===== TRUFFLEHOG REPORT PREVIEW (cat first 5 lines) =====")
+    print("\n===== TRUFFLEHOG REPORT PREVIEW =====")
 
     if not os.path.exists(REPORT_FILE):
-        print("❌ Report file not found")
+        print("❌ Report file not found:", REPORT_FILE)
         return
 
     try:
         subprocess.run(
-            f"cat {REPORT_FILE} | head -n 20"
+            f"cat {REPORT_FILE} | head -n 20",
+            shell=True,
+            check=True
         )
+
     except Exception as e:
-        print("❌ Error previewing report:", e)
+        print("❌ Preview error:", e)
 
     print("===== END REPORT PREVIEW =====\n")
 
 
+# -------------------------------------------------
+# Enterprise Trufflehog Scan
+# -------------------------------------------------
 def run():
 
     workspace = os.getcwd()
 
+    os.makedirs(REPORT_DIR, exist_ok=True)
+
     print("\n===== TRUFFLEHOG ENTERPRISE SCAN =====")
-    print("Running Trufflehog...")
+    print("Workspace:", workspace)
 
     try:
         with open(REPORT_FILE, "w") as outfile:
-            result = subprocess.run([
-                "docker", "run", "--rm",
-                "-v", f"{workspace}:/repo",
-                "gesellix/trufflehog",
-                "--json", "/repo"
-            ], stdout=outfile, stderr=subprocess.PIPE, text=True)
+
+            result = subprocess.run(
+                [
+                    "docker", "run", "--rm",
+                    "-v", f"{workspace}:/repo",
+                    "gesellix/trufflehog",
+                    "--json", "/repo"
+                ],
+                stdout=outfile,
+                stderr=subprocess.PIPE,
+                text=True
+            )
 
         if result.returncode != 0:
             print("⚠ Trufflehog exited with non-zero code:", result.returncode)
@@ -50,7 +65,13 @@ def run():
     except Exception as e:
         print("❌ Error running Trufflehog:", e)
 
-    # ✅ Preview using cat
     preview_report()
 
     print("===== TRUFFLEHOG SCAN COMPLETED =====\n")
+
+
+# -------------------------------------------------
+# Only Run If Executed Directly
+# -------------------------------------------------
+if __name__ == "__main__":
+    run()
