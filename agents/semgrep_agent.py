@@ -9,16 +9,16 @@ os.makedirs(REPORT_DIR, exist_ok=True)
 
 def preview_report():
 
-    print("\n===== SEMGREP REPORT PREVIEW (cat first 5 lines) =====")
-
+    print("\n===== SEMGREP REPORT PREVIEW =====")
+    
     if not os.path.exists(REPORT_FILE):
         print("❌ Report file not found")
         return
 
     try:
-        subprocess.run(
-            f"cat {REPORT_FILE}"
-        )
+        subprocess.run("ls -alR | ", shell=True)
+        subprocess.run("cat reports/semgrep/semgrep.json ", shell=True)
+        
     except Exception as e:
         print("❌ Error previewing report:", e)
 
