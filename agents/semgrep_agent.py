@@ -16,7 +16,6 @@ def preview_report():
         return
 
     try:
-        subprocess.run("ls -alR ", shell=True)
         subprocess.run("cat reports/semgrep/semgrep.json ", shell=True)
         
     except Exception as e:
