@@ -90,6 +90,7 @@ def run():
             f.write(summary)
         print(f"✅ Executive summary written to {summary_file}")
         subprocess.run("ls -al reports/ai", shell=True)
+        subprocess.run("ls -al reports/ai/executive_summary.txt", shell=True)
     except Exception as e:
         print(f"❌ Failed to write executive summary: {e}")
 
