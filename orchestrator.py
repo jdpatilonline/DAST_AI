@@ -20,10 +20,6 @@ def main():
     #run_enterprise_debug()
 
     print("==========================================")
-    print("ZAP Funtion is running")
-    zap()
-
-    print("==========================================")
     print("Semgrep Funtion is running")
     semgrep()
 
@@ -34,6 +30,10 @@ def main():
     print("==========================================")
     print("Nmap Funtion is running")
     nmap()
+
+    print("==========================================")
+    print("ZAP Funtion is running")
+    zap()
 
     print("==========================================")
     print("ai_analysis Funtion is running")
