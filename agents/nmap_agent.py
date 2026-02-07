@@ -21,21 +21,7 @@ def preview_report():
         return
 
     try:
-        cat_cmd = subprocess.Popen(
-            ["cat", REPORT_FILE],
-            stdout=subprocess.PIPE
-        )
-
-        head_cmd = subprocess.Popen(
-            ["head", "-n", "30"],
-            stdin=cat_cmd.stdout,
-            stdout=subprocess.PIPE,
-            text=True
-        )
-
-        output, _ = head_cmd.communicate()
-
-        print(output)
+      subprocess.run("cat reports/nmap/nmap.json ", shell=True)
 
     except Exception as e:
         print("❌ Error previewing report:", e)
