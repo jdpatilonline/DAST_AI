@@ -51,16 +51,6 @@ jobs:
     # -------------------------------------------------
     - name: Install Ollama + Run Ollma + Test Ollma AI 
       run: python ollama_test_agent.py
-
-    # -------------------------------------------------
-    # Start ZAP
-    # -------------------------------------------------
-    - name: Start ZAP proxy tool
-      run: |
-        docker run -d -p 8080:8080 ghcr.io/zaproxy/zaproxy:stable \
-        zap.sh -daemon -port 8080 -host 0.0.0.0
-        echo "Waiting for ZAP..."
-        sleep 60
         
     # -------------------------------------------------
     # Run Orchestrator
