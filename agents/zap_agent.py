@@ -198,8 +198,8 @@ def run():
 
     # ---------------- Active Scan --------------------
     print("\nRunning ZAP Active Scan...")
-    zap.ascan.set_option_attack_strength("LOW")
-    zap.ascan.set_option_alert_threshold("MEDIUM")
+    zap.ascan.set_policy_attack_strength(policyname="Default Policy",attackstrength="LOW")
+    zap.ascan.set_policy_alert_threshold(policyname="Default Policy",alertthreshold="MEDIUM")
     scan_id = zap.ascan.scan(TARGET)
     start_time = time.time()
     while int(zap.ascan.status(scan_id)) < 50:
