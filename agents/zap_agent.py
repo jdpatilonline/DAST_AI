@@ -23,7 +23,7 @@ AI_REPORT_DIR = "reports/ai"
 os.makedirs(REPORT_DIR, exist_ok=True)
 os.makedirs(AI_REPORT_DIR, exist_ok=True)
 
-MAX_SCAN_TIME = 3600  # seconds
+MAX_SCAN_TIME = 600  # seconds
 SPIDER_MAX_CHILDREN = 50
 
 # -------------------------------------------------
@@ -187,10 +187,10 @@ def run():
     print("\nRunning ZAP Spider...")
     zap.urlopen(TARGET)
     time.sleep(2)
-    spider_id = zap.spider.scan(TARGET, maxChildren=SPIDER_MAX_CHILDREN)
+    spider_id = zap.spider.scan(TARGET, maxchildren=SPIDER_MAX_CHILDREN)
     start_time = time.time()
     while int(zap.spider.status(spider_id)) < 100:
-        if time.time() - start_time > 600:  # 10 min timeout
+        if time.time() - start_time > 300:  # 5 min timeout
             print("❌ Spider timeout, aborting")
             break
         print("Spider progress:", zap.spider.status(spider_id), "%")
@@ -202,7 +202,7 @@ def run():
     zap.ascan.set_option_alert_threshold("MEDIUM")
     scan_id = zap.ascan.scan(TARGET)
     start_time = time.time()
-    while int(zap.ascan.status(scan_id)) < 100:
+    while int(zap.ascan.status(scan_id)) < 50:
         if time.time() - start_time > MAX_SCAN_TIME:
             print("❌ Active scan timeout, aborting")
             zap.ascan.stop(scan_id)
