@@ -134,7 +134,7 @@ def start_ollama():
 
         # Wait for API to come up
         start = time.time()
-        timeout = 60
+        timeout = 300
         while time.time() - start < timeout:
             if check_ollama():
                 print("✅ Ollama daemon started and reachable")
