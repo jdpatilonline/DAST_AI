@@ -28,6 +28,6 @@ jobs:
           # pip install aiohttp python-owasp-zap-v2.4 pandas matplotlib playwright docx python-docx
           # python -m playwright install chromium
           # Run your prerequisite script
-          python agent/pre_req.py
+          python agents/pre_req.py
           # Run your enterprise agent script
-          python agent/ollama_and_ZAP_Run.py
+          python agents/ollama_and_ZAP_Run.py
