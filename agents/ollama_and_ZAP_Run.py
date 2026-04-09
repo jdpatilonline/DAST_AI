@@ -100,12 +100,34 @@ def build_client():
     zap._ZAPv2__base = ZAP_PROXY
     return zap
 
+# -------------------------------------------------
+# INSTALL AND START OLLAMA LOCALLY
+# -------------------------------------------------
+def install_and_start_ollama():
+    print("🚀 Installing and starting Ollama locally...")
+
+    try:
+        # Install Ollama using the official script
+        subprocess.run(
+            "curl -fsSL https://ollama.com/install.sh | sh",
+            shell=True,
+            check=True
+        )
+        print("✅ Ollama installed successfully")
+
+        # Start Ollama daemon (serve mode)
+        # subprocess.run(["ollama", "serve"], check=True)
+        subprocess.run(["systemctl", "--user", "start", "ollama"], check=True)
+        print("✅ Ollama daemon started")
+    except Exception as e:
+        print("[✗] Ollama installation/start failed:", e)
+
 # ==========================================
 # CHECK OLLAMA HEALTH
 # ==========================================
 def check_ollama():
     try:
-        r = requests.get(f"{OLLAMA_API_URL}/api/tags", timeout=10)
+        r = requests.get(f"{OLLAMA_API_URL}/api/tags", timeout=100)
         if r.status_code == 200:
             print("[✓] Ollama API reachable")
             return True
@@ -119,7 +141,7 @@ def check_ollama():
 # ==========================================
 def is_model_installed():
     try:
-        r = requests.get(f"{OLLAMA_API_URL}/api/tags", timeout=10)
+        r = requests.get(f"{OLLAMA_API_URL}/api/tags", timeout=100)
         models = r.json().get("models", [])
         return any(MODEL in m.get("name", "") for m in models)
     except:
@@ -178,6 +200,9 @@ def run():
     wait_for_api()
     zap_client = build_client()
 
+    # Install and start Ollama locally
+    install_and_start_ollama()
+    
     # Ollama checks
     if not check_ollama():
         print("[✗] Ollama API not reachable")
