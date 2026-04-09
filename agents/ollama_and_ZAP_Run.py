@@ -101,10 +101,10 @@ def build_client():
     return zap
 
 # -------------------------------------------------
-# INSTALL AND START OLLAMA LOCALLY
+# INSTALL OLLAMA LOCALLY
 # -------------------------------------------------
 def install_and_start_ollama():
-    print("🚀 Installing and starting Ollama locally...")
+    print("🚀 Installing Ollama locally...")
 
     try:
         # Install Ollama using the official script
@@ -115,10 +115,10 @@ def install_and_start_ollama():
         )
         print("✅ Ollama installed successfully")
     except Exception as e:
-        print("[✗] Ollama installation/start failed:", e)
+        print("[✗] Ollama installation failed:", e)
 
 # -------------------------------------------------
-# START OLLAMA LOCALLY (NO SYSTEMCTL)
+# START OLLAMA LOCALLY
 # -------------------------------------------------
 def start_ollama():
     print("🚀 Starting Ollama locally...")
@@ -130,6 +130,7 @@ def start_ollama():
 
     try:
         # Start Ollama daemon in background
+        subprocess.Popen(["ollama", "ls"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.Popen(["ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # Wait for API to come up
@@ -227,6 +228,9 @@ def run():
 
     # Install and start Ollama locally
     install_and_start_ollama()
+
+    # start Ollama locally
+    start_ollama():
     
     # Ollama checks
     if not check_ollama():
