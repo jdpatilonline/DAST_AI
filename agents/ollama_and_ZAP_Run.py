@@ -114,13 +114,38 @@ def install_and_start_ollama():
             check=True
         )
         print("✅ Ollama installed successfully")
-
-        # Start Ollama daemon (serve mode)
-        # subprocess.run(["ollama", "serve"], check=True)
-        subprocess.run(["systemctl", "--user", "start", "ollama"], check=True)
-        print("✅ Ollama daemon started")
     except Exception as e:
         print("[✗] Ollama installation/start failed:", e)
+
+# -------------------------------------------------
+# START OLLAMA LOCALLY (NO SYSTEMCTL)
+# -------------------------------------------------
+def start_ollama():
+    print("🚀 Starting Ollama locally...")
+
+    # First check if API is already reachable
+    if check_ollama():
+        print("✅ Ollama already running")
+        return True
+
+    try:
+        # Start Ollama daemon in background
+        subprocess.Popen(["ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # Wait for API to come up
+        start = time.time()
+        timeout = 60
+        while time.time() - start < timeout:
+            if check_ollama():
+                print("✅ Ollama daemon started and reachable")
+                return True
+            time.sleep(3)
+
+        print("[✗] Ollama did not start within timeout")
+        return False
+    except Exception as e:
+        print("[✗] Failed to start Ollama:", e)
+        return False
 
 # ==========================================
 # CHECK OLLAMA HEALTH
