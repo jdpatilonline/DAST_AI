@@ -230,7 +230,7 @@ def run():
     install_and_start_ollama()
 
     # start Ollama locally
-    start_ollama():
+    start_ollama()
     
     # Ollama checks
     if not check_ollama():
