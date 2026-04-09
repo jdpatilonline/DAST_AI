@@ -21,6 +21,7 @@ jobs:
       # Step 3: Create and activate virtual environment, install deps, run scripts
       - name: Install and run agent scripts
         run: |
+          ls -al
           python3 -m venv zapenv
           source zapenv/bin/activate
           pip install --upgrade pip
