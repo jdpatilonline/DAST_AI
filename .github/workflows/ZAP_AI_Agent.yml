@@ -1,0 +1,52 @@
+name: Run Ollama and ZAP Agent
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ZAP_Scan_AI_Via_Ollama:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m venv zapenv
+          source zapenv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt   # remove this line if you have no requirements.txt
+
+      - name: Run prerequisite setup
+        run: |
+          source zapenv/bin/activate
+          python3 agents/pre_req.py
+
+      - name: Start Ollama and ZAP
+        run: |
+          source zapenv/bin/activate
+          python3 agents/ollama_and_ZAP_Run.py
+
+      - name: Wait for services to be ready
+        run: sleep 30
+
+      - name: Run ZAP AI Agent
+        run: |
+          source zapenv/bin/activate
+          python3 agents/zap_agent_v4.py
+
+      - name: Upload scan reports
+        if: always()   # upload even if the scan step fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-scan-reports-${{ github.run_id }}
+          path: reports/
+          retention-days: 30
