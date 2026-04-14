@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup-and-run:
+  ZAP_Scan_AI_Via_Ollama:
     runs-on: ubuntu-latest
-
     steps:
       # Step 1: Checkout repository
       - name: Checkout code
@@ -21,14 +20,16 @@ jobs:
       # Step 3: Create and activate virtual environment, install deps, run scripts
       - name: Install and run agent scripts
         run: |
-          ls -al
-          ls -al agents
+          ls -alr
+          # Setup Python Environment
           python3 -m venv zapenv
           source zapenv/bin/activate
           pip install --upgrade pip
-          # pip install aiohttp python-owasp-zap-v2.4 pandas matplotlib playwright docx python-docx
-          # python -m playwright install chromium
+          #
           # Run your prerequisite script
           python agents/pre_req.py
+          #
           # Run your enterprise agent script
           python agents/ollama_and_ZAP_Run.py
+          sleep 30
+          python agents/zap_agent_v4.py
