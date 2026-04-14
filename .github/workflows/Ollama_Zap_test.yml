@@ -27,9 +27,9 @@ jobs:
           pip install --upgrade pip
           #
           # Run your prerequisite script
-          python agents/pre_req.py
+          python3 agents/pre_req.py
           #
           # Run your enterprise agent script
-          python agents/ollama_and_ZAP_Run.py
+          python3 agents/ollama_and_ZAP_Run.py
           sleep 30
-          python agents/zap_agent_v4.py
+          python3 agents/zap_agent_v4.py
