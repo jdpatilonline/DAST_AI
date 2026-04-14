@@ -88,7 +88,7 @@ class Config:
 
     # AI
     ollama_url: str      = os.environ.get("OLLAMA_URL",  "http://127.0.0.1:11434")
-    model: str           = os.environ.get("OLLAMA_MODEL", "qwen2.5:7b")
+    model: str           = os.environ.get("OLLAMA_MODEL", "qwen")
 
     # Target
     target: str          = os.environ.get("ZAP_TARGET",  "https://pentest-ground.com:4280/")
