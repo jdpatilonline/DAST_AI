@@ -6,7 +6,7 @@ on:
 jobs:
   ZAP_Scan_AI_Via_Ollama:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     steps:
       - name: Checkout code
@@ -49,4 +49,3 @@ jobs:
         with:
           name: zap-scan-reports-${{ github.run_id }}
           path: reports/
-          retention-days: 30
