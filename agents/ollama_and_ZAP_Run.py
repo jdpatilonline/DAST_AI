@@ -163,6 +163,7 @@ def ensure_model():
     try:
         subprocess.run(["ollama", "pull", MODEL], check=True)
         print("[✓] Model pulled successfully")
+        subprocess.run(["ollama", "list", MODEL], check=True)
         return True
     except Exception as e:
         print("[✗] Model pull failed. Pull manually on server:", e)
