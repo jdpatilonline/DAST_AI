@@ -18,7 +18,7 @@ jobs:
           python-version: '3.10'
 
       # Step 3: Create and activate virtual environment, install deps, run scripts
-      - name: Install and run agent scripts
+      - name: Install Ollama, ZAP and run agent scripts
         run: |
           ls -alr
           # Setup Python Environment
