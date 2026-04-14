@@ -33,8 +33,8 @@ def start_zap():
         "docker", "run", "-d",
         "--name", container_name,
         "--cpus", "2.0",                 # Limit to 2 CPU Cores
-        "--memory", "4g",                # Limit to 4GB RAM
-        "-e", "JAVA_OPTS=-Xmx2g",        # Limit Java Heap to 2GB
+        "--memory", "6g",                # Limit to 4GB RAM
+        "-e", "JAVA_OPTS=-Xmx4g",        # Limit Java Heap to 2GB
         "-p", f"{ZAP_PORT}:8080",
         image_name,
         "zap.sh", "-daemon", 
