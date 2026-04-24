@@ -4,7 +4,8 @@
 •	Correlate auth failures with scan duration increase
 •	Document auth failure patterns
 https://claude.com/cai/oauth/authorize?code=true&client_id=9d1c250a-e61b-44d9-88ed-5944d1962f5e&response_type=code&redirect_uri=https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback&scope=org%3Acreate_api_key+user%3Aprofile+user%3Ainference+user%3Asessions%3Aclaude_code+user%3Amcp_servers+user%3Afile_upload&code_challenge=1qARYLCCTy7WXorAGgLdlrDkSBBoLGs56fjZpUF4DoQ&code_challenge_method=S256&state=HDFsioP_mYBaMen3-Qf6ZToQTkVdcqyZV45ETFoPdSA
-a2a1TZvfwu5MZt6C5VfxdvikR3s92ZUVe46Fumz90Q75pC7U#ryhVFAXE1r5eLGk7S0pLutLyzlQ9ZXris6mS_cFmx8Aaa
+
+LFTbkoRbuGpCyiDZfbp4oompzyoT8r4WtTpue8WlKy09g0Gp#HDFsioP_mYBaMen3-Qf6ZToQTkVdcqyZV45ETFoPdSA
 2.	False Positive Reduction - 
 •	Use AI to group duplicate findings
 •	Find out informational findings
