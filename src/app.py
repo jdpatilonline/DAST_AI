@@ -11,16 +11,16 @@ def get_db():
 def search():
     q = request.args.get("q", "")
     # VULNERABLE: SQL injection via string concatenation
-    sql = f"SELECT id, name FROM products WHERE name LIKE '%{q}%'"
+    sql = "SELECT id, name FROM products WHERE name LIKE ?"
     con = get_db()
     cur = con.cursor()
-    cur.execute(sql)
+    cur.execute(sql, (f'%{q}%',))
     rows = cur.fetchall()
     return {"results": rows}
 
 @app.get("/ping")
 def ping():
-    host = request.args.get("host", "127.0.0.1")
+    host = request.args.get("host", "127.00.1")
     # VULNERABLE: shell=True with user-controlled input
     subprocess.run(f"ping -c 1 {host}", shell=True, check=False)
     return {"ok": True}
