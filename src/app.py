@@ -11,10 +11,10 @@ def get_db():
 def search():
     q = request.args.get("q", "")
     # VULNERABLE: SQL injection via string concatenation
-    sql = f"SELECT id, name FROM products WHERE name LIKE '%{q}%'"
+    sql = "SELECT id, name FROM products WHERE name LIKE ?"
     con = get_db()
     cur = con.cursor()
-    cur.execute(sql)
+    cur.execute(sql, ('%' + q + '%',))
     rows = cur.fetchall()
     return {"results": rows}
 
