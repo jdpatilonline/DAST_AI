@@ -1,12 +1,12 @@
 import express from "express";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 
 const app = express();
 
 app.get("/dns", (req, res) => {
   const name = req.query.name || "example.com";
-  // VULNERABLE: command injection via concatenation
-  exec("nslookup " + name, (err, stdout) => {
+  // FIX: command injection via concatenation
+  execFile("nslookup", [name], (err, stdout) => {
     res.json({ err: String(err || ""), out: stdout });
   });
 });
