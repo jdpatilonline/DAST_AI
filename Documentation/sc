@@ -1,1 +1,195 @@
-.
+You are a senior offensive security engineer building
+AI security testing modules for an existing pentesting platform.
+PLATFORM CONTEXT:
+- Existing platform has: DAST, API security testing, ASM,
+ DevSecOps integrations (SonarQube, etc.), multi-chain exploit
+ engine, compliance mapper, reporting engine
+- Stack: [INSERT YOUR STACK — Python/Node/Go/etc.]
+- Finding schema: [INSERT YOUR EXISTING FINDING DATA MODEL]
+- New modules must output findings in the same schema
+TASK: Build [MODULE NAME — choose one below]
+--- OPTION A: LLM Red Teaming Engine ---
+Build a Python module that:
+1. Accepts a target (API endpoint URL or direct model API key)
+2. Runs a structured attack sequence:
+  - Direct prompt injection (10 payload variants)
+  - Indirect prompt injection via simulated RAG input
+  - System prompt extraction attempts
+  - Multi-turn jailbreak chain (minimum 3-turn conversation)
+  - Insecure output test (inject XSS payload, check if reflected)
+3. Uses an LLM-as-judge (call GPT-4o or Claude) to evaluate
+  whether each attack succeeded
+4. Returns findings as JSON with fields:
+  {
+    attack_type: string,
+    severity: critical|high|medium|low,
+    owasp_llm_tag: string (e.g. LLM01),
+    nist_control: string,
+    eu_ai_act_risk: string,
+    prompt_used: string,
+    response_received: string,
+    success: boolean,
+    reproduction_steps: string[],
+    remediation: string
+  }
+5. Handle rate limiting, timeouts, and API errors gracefully
+6. Be modular — each attack type is a separate function
+--- OPTION B: MCP Security Scanner ---
+Build a Python module that:
+1. Accepts a target MCP server (URL or local socket path)
+2. Connects using the official MCP Python SDK as a client
+3. Runs discovery phase:
+  - Enumerate all available tools and their schemas
+  - Extract tool names, descriptions, input schemas
+  - Map declared permissions and scopes
+4. Runs static analysis phase:
+  - Parse tool descriptions for poisoning indicators
+    (instruction-like language, override commands,
+     hidden directives in metadata)
+  - Check for sensitive data patterns in tool schemas
+  - Flag overly broad permission scopes
+5. Runs dynamic testing phase:
+  - Probe each tool with boundary inputs
+  - Test for SSRF via URL parameters in tools
+  - Check if tool responses leak credentials or PII
+  - Test authentication bypass (call without token)
+  - Test tool behavior with malformed inputs
+6. Builds a permission graph:
+  - Tool → data source mapping
+  - Cross-tool data flow analysis
+7. Returns findings as JSON matching the schema above
+  plus an attack_surface_map object:
+  {
+    tools_discovered: [],
+    permission_matrix: {},
+    data_flows: [],
+    exposed_endpoints: []
+  }
+8. Be modular — discovery, static, dynamic are separate phases
+  so each can run independently
+CONSTRAINTS:
+- All testing must be non-destructive by default
+- Add a --aggressive flag for destructive test variants
+- Log all requests/responses for audit trail
+- Respect rate limits and connection timeouts
+- No hardcoded credentials anywhere
+START with the discovery and static analysis phases first,
+then dynamic testing, then the judge/scoring layer.
+Ask me before making assumptions about the existing
+finding schema or database integration.
+
+
+
+# AI Security Modules — Platform Extension Spec
+## Context
+This platform already covers: DevSecOps pipeline integration,
+DAST, API security, ASM (attack surface management), multi-chain
+exploit chaining, compliance reporting.
+We are adding two new verticals:
+1. LLM / AI Application Red Teaming
+2. MCP (Model Context Protocol) Security Scanner
+These must integrate with existing: task management, reporting
+engine, compliance mapper, discovery engine.
+---
+## Module 1: LLM Red Teaming Engine
+### What it tests
+- Prompt Injection (direct and indirect via RAG/tool output)
+- Jailbreaks (role-play, DAN, system prompt override attempts)
+- System Prompt Extraction
+- Data Leakage through context windows
+- Insecure Output Handling (XSS via LLM output, code injection)
+- Excessive Agency (agent takes unauthorized actions)
+- Model Denial of Service (token flooding, recursive prompts)
+- Training Data Poisoning indicators
+- Multi-turn manipulation chains (not single-payload)
+### Compliance mapping (auto-tag every finding to)
+- OWASP LLM Top 10 2025 (LLM01–LLM10)
+- NIST AI RMF (Govern, Map, Measure, Manage)
+- EU AI Act risk classification (minimal/limited/high/unacceptable)
+- MITRE ATLAS technique IDs
+### Input targets
+- REST API endpoints that call an LLM
+- Chat interface URLs (web scraping + interaction)
+- Direct model API keys (OpenAI, Anthropic, Gemini, local Ollama)
+- LangChain / LlamaIndex app endpoints
+- RAG pipeline endpoints
+### Output
+- Severity-rated findings (Critical/High/Medium/Low)
+- Reproduction steps (exact prompt chain that triggered issue)
+- Compliance tag per finding
+- Remediation guidance (guardrail recommendations)
+- Feeds into existing platform reporting engine
+### Architecture
+- Attack module: payload library (curated + AI-generated variants)
+- Orchestrator: multi-turn conversation manager
+- Judge layer: LLM-as-judge to evaluate if attack succeeded
+- Result normalizer: maps to existing finding schema
+---
+## Module 2: MCP Security Scanner
+### What it tests
+Tool Poisoning
+- Malicious instructions hidden in tool name/description metadata
+- Rug-pull attacks (tool behavior changes post-approval)
+- Shadow tool injection via tool output
+Identity & Authentication
+- Missing auth on MCP server endpoints
+- Token/credential exposure in tool responses
+- Broken identity binding (wrong provider tool execution)
+Permission & Access Control
+- Overprivileged tool scopes
+- Unauthorized cross-tool data flow
+- Agent accessing resources beyond declared scope
+Data Exposure
+- PII leakage through tool responses
+- Sensitive data in tool metadata
+- Insecure logging of tool inputs/outputs
+Infrastructure
+- Publicly exposed MCP server endpoints (no auth)
+- Default credentials on MCP deployments
+- Transport security (missing TLS, weak cipher suites)
+- SSRF via tool URL parameters
+Multi-Server Composition risks
+- Tool name collision across servers
+- Trust boundary violations between MCP servers
+- A2A protocol trust chain weaknesses
+### Compliance mapping
+- CIS MCP Security Guide (April 2026)
+- OWASP LLM Top 10 (LLM07 Insecure Plugin Design)
+- NIST AI RMF
+- SOC 2 Type II control mapping
+### Input targets
+- MCP server URLs / local socket paths
+- Tool schema / manifest JSON
+- MCP client config files (Claude Desktop, VS Code, etc.)
+- Docker/K8s deployed MCP containers
+### Output
+- Attack surface map (all tools, permissions, data flows)
+- Vulnerability findings with CVSS scoring
+- Tool permission matrix (what each agent can reach)
+- Compliance tag per finding
+- Feeds into existing ASM and reporting modules
+### Architecture
+- Discovery: enumerate all MCP servers, tools, schemas
+- Static analysis: parse tool descriptions for poisoning indicators
+- Dynamic testing: connect as client, probe each tool
+- Permission mapper: build graph of agent → tool → data access
+- Result normalizer: maps to existing finding schema
+---
+## Integration Points (existing platform)
+| New Module       | Hooks Into              |
+|------------------|------------------------|
+| LLM Red Teaming  | API Security module     |
+| LLM Red Teaming  | Compliance engine       |
+| LLM Red Teaming  | Reporting module        |
+| MCP Scanner      | ASM module              |
+| MCP Scanner      | Discovery engine        |
+| MCP Scanner      | Compliance engine       |
+| Both             | Task/finding management |
+| Both             | Multi-chain exploit     |
+---
+## Tech Stack Recommendations
+- Python preferred (best MCP/LLM library ecosystem)
+- mcp Python SDK for MCP client interaction
+- LangChain or direct API calls for LLM testing
+- Neo4j or NetworkX for permission graph (MCP)
+- Existing DB schema extended for new finding types
